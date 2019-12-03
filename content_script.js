@@ -25,11 +25,11 @@ const createDate = tz => {
   let utcMinutes = new Date().getUTCMinutes();
   tz = tz.slice(3,-3);
   if (eval(utcHours+tz) >= 24) {
-    utcHours = 24 - eval(utcHours+tz);
+    utcHours = Math.abs(24 - eval(utcHours+tz));
   } else if (eval(utcHours+tz) < 0) {
-    utcHours = 24 + eval(utcHours+tz);
+    utcHours = Math.abs(24 + eval(utcHours+tz));
   } else {
-	utcHours = eval(utcHours+tz)
+	utcHours = Math.abs(eval(utcHours+tz))
   }
   return `${utcHours.toString().length === 1 ? `0${utcHours}` : utcHours}:${utcMinutes.toString().length === 1 ? `0${utcMinutes}` : utcMinutes }`
 }

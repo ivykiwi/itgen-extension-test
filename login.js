@@ -20,7 +20,6 @@ window.onload = function() {
                 });
         
                 const responseJson = await response.json();
-                console.log(responseJson)
                 if (responseJson.token) {
                     chrome.storage.local.set({'token': responseJson.token})
                     chrome.storage.local.set({'username': username})
