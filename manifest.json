@@ -2,12 +2,26 @@
     "manifest_version": 2,
     "name": "Test itgen extension",
     "version": "1.0",
+    "browser_action": {
+      "default_popup": "popup_login.html"
+    },
+    "background": {
+      "scripts": ["background.js"],
+      "persistent": false
+    },
+    "permissions": [
+      "tabs",
+      "bookmarks",
+      "unlimitedStorage",
+      "storage"
+    ],
     "content_scripts": [
       {
         "matches": [
           "<all_urls>"
         ],
-        "js": ["script.js"]
+        "js": ["content_script.js"]
       }
-    ]
+    ],
+    "web_accessible_resources": ["assets/plus.svg", "assets/profile.svg", "assets/calendar.svg"]
   }
