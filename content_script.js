@@ -156,9 +156,9 @@ const loadDialog = (dialogId, type, _lastRequest) => {
         divBalance.innerHTML +=
           `<div style=" width: 260px; height: 40px; margin-top: 8px; display: flex; flex-direction: row; justify-content: space-between;">
           <span style=" align-self: center; text-align: center; user-select: none;" >Поле c2d не заполнено.</span>
-          <div class="btn__sendC2D" style=" align-self: center; width: 100px; height: 25px; font-size: 10.5px; display: flex; flex-direction: column; justify-content: center; text-align: center; border: 1px solid #acacac; cursor: pointer;">
+          <button class="btn__sendC2D" style=" align-self: center; width: 100px; height: 25px; font-size: 10.5px; display: flex; flex-direction: row; justify-content: center; text-align: center; background: #fff; border: 1px solid #acacac; cursor: pointer;">
             Заполнить
-          </div>
+          </button>
         </div>`
       }
       
