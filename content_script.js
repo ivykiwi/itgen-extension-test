@@ -23,13 +23,13 @@ const fetchResource = (input, init) => {
 const createDate = tz => {
   let utcHours = new Date().getUTCHours();
   let utcMinutes = new Date().getUTCMinutes();
-  tz = tz.slice(3,-3);
-  if (eval(utcHours+tz) >= 24) {
-    utcHours = Math.abs(24 - eval(utcHours+tz));
-  } else if (eval(utcHours+tz) < 0) {
-    utcHours = Math.abs(24 + eval(utcHours+tz));
+  tz = tz.slice(3, -3);
+  if (eval(utcHours + tz) >= 24) {
+    utcHours = Math.abs(24 - eval(utcHours + tz));
+  } else if (eval(utcHours + tz) < 0) {
+    utcHours = Math.abs(24 + eval(utcHours + tz));
   } else {
-	utcHours = Math.abs(eval(utcHours+tz))
+    utcHours = Math.abs(eval(utcHours + tz))
   }
   return `${utcHours.toString().length === 1 ? `0${utcHours}` : utcHours}:${utcMinutes.toString().length === 1 ? `0${utcMinutes}` : utcMinutes }`
 }
@@ -78,35 +78,22 @@ const loadDialog = (dialogId, type, _lastRequest) => {
       const isParent = () => foundedUser.roles.includes('parent');
       const parents = response.parents[0];
 
-      const divBalance = document.querySelector('.left-title-dialog-container');
-
-      if (divBalance && response.balance) {
-        divBalance.innerHTML += `
-          <span style="margin-top: 4px; font-weight: 600; color: #000; font-size: 12px;">
-            Баланс:
-          </span>
-          <span>
-            ${Object.entries(response.balance).map(elem => [elem[0] + 'ч', elem[1]].join(': ')).join(', ')}
-          </span>
-          `
-      }
-
       if (div) {
         div.innerHTML = div.innerHTML + `
-                <span style="margin-left: 4px;">
+                <span style="margin-left: 4px; cursor: ">
                   (${ getRoleName() })
                 </span>
-                <span style="margin-left: 4px; margin-right: 4px; font-weight: 600; color: #000; font-size: 12px;">
+                <span style="padding-left: 4px; padding-right: 4px; font-weight: 600; color: #000; font-size: 12px; cursor: auto;">
                   ${foundedUser.tz ? `${createDate(foundedUser.tz)} (${foundedUser.tz})` : ''}
                 </span>
-                <span style="margin-left: 2px; margin-right: 2px; font-weight: 600; color: #000; font-size: 12px;">
+                <span style="padding-left: 2px; padding-right: 2px; font-weight: 600; color: #000; font-size: 12px; cursor: auto;">
                   ${foundedUser.city ? foundedUser.country + ',' : foundedUser.country} ${foundedUser.city}
-                </span>
+                </span>&nbsp
                 <a href="${getUrl(`family/${foundedUser.familyId}`)}" target="_blank">
-                  Семья
+                  <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/greenhome.svg')}" alt="Семья"/>
                 </a>&nbsp
                 <a href="${getUrl(`profile/${foundedUser._id}`)}" target="_blank">
-                  <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/profile.svg')}" alt="Семья"/>
+                  <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/profile.svg')}" alt="Профиль"/>
                 </a>
                 ${ isParent() ? '' : (
                   ` &nbsp<a href="${getUrl(`schedule/${foundedUser._id}`)}" target="_blank">
@@ -117,6 +104,19 @@ const loadDialog = (dialogId, type, _lastRequest) => {
                   </a>`
                 ) }`;
         div.style.color = '#c51c1c';
+
+        div.addEventListener('mouseenter', e => {
+          e.stopPropagation()
+        })
+
+        Array.from(div.children).forEach((elem, index) => {
+          if (index !== 0) {
+            elem.addEventListener('click', e => {
+              e.stopPropagation()
+              return false;
+            })
+          }
+        })
       }
 
       const chatDiv = document.querySelector('div#chat-container > div');
@@ -137,6 +137,44 @@ const loadDialog = (dialogId, type, _lastRequest) => {
                     ) }
                   </div>`).join('')}
           </div>` + chatDiv.innerHTML;
+      }
+      
+      const divBalance = document.querySelector('.left-title-dialog-container');
+
+      if (divBalance && response.balance) {
+        divBalance.innerHTML += `
+            <span style="margin-top: 4px; font-weight: 600; color: #000; font-size: 12px;">
+              Баланс:
+            </span>
+            <span>
+              ${Object.entries(response.balance).map(elem => [elem[0] + 'ч', elem[1]].join(': ')).join(', ')}
+            </span>
+            `
+      }
+
+      if (divBalance && type === 2) {
+        divBalance.innerHTML +=
+          `<div style=" width: 260px; height: 40px; margin-top: 8px; display: flex; flex-direction: row; justify-content: space-between;">
+          <span style=" align-self: center; text-align: center; user-select: none;" >Поле c2d не заполнено.</span>
+          <div class="btn__sendC2D" style=" align-self: center; width: 100px; height: 25px; font-size: 10.5px; display: flex; flex-direction: column; justify-content: center; text-align: center; border: 1px solid #acacac; cursor: pointer;">
+            Заполнить
+          </div>
+        </div>`
+      }
+      
+      const btnC2D = document.querySelector('.btn__sendC2D');
+
+      if (btnC2D) {
+        btnC2D.addEventListener('click', () => {
+          fetchResource(`${BASE_URL}/api/v1/c2d/link`, {
+            method: 'POST',
+            headers: {
+                'authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId: foundedUser._id, dialogId })
+          }).then(() => window.location = window.location)
+        })
       }
 
       console.log(`set dialogId:${dialogId}`);

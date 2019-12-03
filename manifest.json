@@ -23,5 +23,5 @@
         "js": ["content_script.js"]
       }
     ],
-    "web_accessible_resources": ["assets/plus.svg", "assets/profile.svg", "assets/calendar.svg"]
+    "web_accessible_resources": ["assets/plus.svg", "assets/profile.svg", "assets/calendar.svg", "assets/greenhome.svg"]
   }

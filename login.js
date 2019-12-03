@@ -1,3 +1,5 @@
+const BASE_URL = 'https://staging.portal.itgen.io';
+
 window.onload = function() {
     
     let timer;
@@ -11,7 +13,7 @@ window.onload = function() {
                 const username = document.querySelectorAll('.login__input')[0].value;
                 const password = document.querySelectorAll('.login__input')[1].value;
         
-                const response = await fetch(`https://staging.portal.itgen.io/api/v1/c2d/login`, {
+                const response = await fetch(`${BASE_URL}/api/v1/c2d/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
