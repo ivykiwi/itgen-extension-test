@@ -37,7 +37,7 @@ const createDate = tz => {
 const FILL_C2D_HTML = () => `
   <div style="width: 260px; height: 40px; margin-top: 8px; display: flex; flex-direction: row; justify-content: space-between;" >
     <span style=" align-self: center; text-align: center; user-select: none;" >Поле c2d не заполнено.</span>
-    <button class="btn__sendC2D" style=" align-self: center; width: 100px; height: 25px; font-size: 10.5px; display: flex; flex-direction: column; justify-content: center; text-align: center; border: 1px solid #acacac; cursor: pointer;">
+    <button class="btn__sendC2D" style=" align-self: center; width: 100px; height: 25px; font-size: 10.5px; display: flex; flex-direction: row; justify-content: center; text-align: center; border: 1px solid #acacac; background: #fff; cursor: pointer;">
       Заполнить
     </button>
   </div>`;
@@ -61,9 +61,7 @@ const loadDialog = (dialogId, type, _lastRequest) => {
   } else if (_lastRequest === lastRequest) {
     let div = document.querySelector('div.left-title-dialog-container div div');
     if (div) div.innerHTML += ` &nbsp<span>Загрузка...</span>`;
-    chrome.storage.local.get('token', async ({
-      token
-    }) => {
+    chrome.storage.local.get('token', async ({ token }) => {
       if (!token) {
         if (div) div.innerHTML = div.innerHTML.slice(0, -30);
         return;
@@ -87,108 +85,110 @@ const loadDialog = (dialogId, type, _lastRequest) => {
       }
 
       if (div) div.innerHTML = div.innerHTML.slice(0, -30);
+      if (_lastRequest === lastRequest) {
+        const foundedUser = response.lead || [...response.parents, ...response.childs].find(user => user._id === response.foundedUserId);
 
-      const foundedUser = response.lead || [...response.parents, ...response.childs].find(user => user._id === response.foundedUserId);
+        const getUrl = (relativePath) => `${BASE_URL}/${relativePath}`;
+        const isParent = () => foundedUser.roles.includes('parent');
+        const isLead = () => !foundedUser.roles;
+        const isChild = () => !isParent() && !isLead();
+        const getRoleName = () => isLead() ? 'лид' : (isParent() ? 'род.' : 'уч.');
 
-      const getUrl = (relativePath) => `${BASE_URL}/${relativePath}`;
-      const isParent = () => foundedUser.roles.includes('parent');
-      const isLead = () => !foundedUser.roles;
-      const isChild = () => !isParent() && !isLead();
-      const getRoleName = () => isLead() ? 'лид' : isParent() ? 'род.' : 'уч.';
+        const parents = response.parents[0];
 
-      const parents = response.parents[0];
+        if (div) {
+          div.innerHTML = div.innerHTML + `
+                  <span style="margin-left: 4px; cursor: ">
+                    (${ getRoleName() })
+                  </span>
+                  <span style="padding-left: 4px; padding-right: 4px; font-weight: 600; color: #000; font-size: 12px; cursor: auto;">
+                    ${foundedUser.tz ? `${createDate(foundedUser.tz)} (${foundedUser.tz})` : ''}
+                  </span>
+                  <span style="padding-left: 2px; padding-right: 2px; font-weight: 600; color: #000; font-size: 12px; cursor: auto;">
+                    ${foundedUser.city ? foundedUser.country + ',' : foundedUser.country} ${foundedUser.city}
+                  </span>&nbsp
+                  ${foundedUser.familyId ? 
+                    `<a href="${getUrl(`family/${foundedUser.familyId}`)}" target="_blank">
+                      <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/greenhome.svg')}" alt="Семья"/>
+                    </a>&nbsp` : 
+                    ''
+                  }
+                  <a href="${ getUrl(`${ isLead() ? 'lead' : 'profile'}/${foundedUser._id }`) } " target="_blank">
+                    <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/profile.svg')}" alt="Профиль" />
+                  </a>
+                  ${ !isChild() ? '' : ( ` &nbsp
+                    <a href="${getUrl(`schedule/${foundedUser._id}`)}" target="_blank">
+                      <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/calendar.svg')}" alt="Расписание"/>
+                    </a> &nbsp 
+                    <a href="${getUrl(`createSchedule/${foundedUser._id}`)}" target="_blank">
+                      <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/plus.svg')}" alt="Записать"/>
+                    </a>`
+                    )
+                  }`
+          div.style.color = '#c51c1c';
 
-      if (div) {
-        div.innerHTML = div.innerHTML + `
-                <span style="margin-left: 4px; cursor: ">
-                  (${ getRoleName()})
-                </span>
-                <span style="padding-left: 4px; padding-right: 4px; font-weight: 600; color: #000; font-size: 12px; cursor: auto;">
-                  ${foundedUser.tz ? `${createDate(foundedUser.tz)} (${foundedUser.tz})` : ''}
-                </span>
-                <span style="padding-left: 2px; padding-right: 2px; font-weight: 600; color: #000; font-size: 12px; cursor: auto;">
-                  ${foundedUser.city ? foundedUser.country + ',' : foundedUser.country} ${foundedUser.city}
-                </span>&nbsp
-                ${foundedUser.familyId ? `<a href="${getUrl(`family/${foundedUser.familyId}`)}" target="_blank">
-                  <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/greenhome.svg')}" alt="Семья"/>
-                </a>&nbsp`: ''}
-                <a href="${getUrl(`${isLead() ? 'lead' : 'profile'}/${foundedUser._id}`)
-          } " target="_blank">
-    < img style = "width: 15px; height: 15px" src = "${chrome.extension.getURL('assets/profile.svg')}" alt = "Профиль" />
-                </a >
-  ${
-          !isChild() ? '' : (
-            ` &nbsp<a href="${getUrl(`schedule/${foundedUser._id}`)}" target="_blank">
-                    <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/calendar.svg')}" alt="Расписание"/>
-                  </a> &nbsp 
-                  <a href="${getUrl(`createSchedule/${foundedUser._id}`)}" target="_blank">
-                    <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/plus.svg')}" alt="Записать"/>
-                  </a>`
-          )
-          } `;
-        div.style.color = '#c51c1c';
+          Array.from(div.children).forEach((elem, index) => {
+            if (index !== 0) {
+              elem.addEventListener('click', e => {
+                e.stopPropagation()
+                return false;
+              })
+            }
+          })
+        };
 
-        div.addEventListener('mouseenter', e => {
-          e.stopPropagation()
-        })
+        const chatDiv = document.querySelector('div#chat-container > div');
+        const familyUsers = isLead() ? [] : isParent() ? response.childs : response.parents;
 
-        Array.from(div.children).forEach((elem, index) => {
-          if (index !== 0) {
-            elem.addEventListener('click', e => {
-              e.stopPropagation()
-              return false;
-            })
-          }
-        })
+        if (chatDiv && familyUsers.length) {
+          chatDiv.innerHTML = `
+            <div style="position: absolute; width: auto; height: auto; border: 1px solid rgba(0,0,0,0.2); padding: 2px 10px; background: #fff; z-index: 10" >
+            ${ familyUsers.map(elem => `
+                      <div style="padding: 2px 0">
+                        <a href="${getUrl(`profile/${elem._id}`)}"> ${elem.firstName} ${elem.lastName} </a> &nbsp 
+                        ${ !isParent() ? '' : (
+                          `<a href="${getUrl(`schedule/${elem._id}`)}" target="_blank">
+                            <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/calendar.svg')}" alt="Расписание"/>
+                          </a> &nbsp 
+                          <a href="${getUrl(`createSchedule/${elem._id}`)}" target="_blank">
+                            <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/plus.svg')}" alt="Записать"/>
+                          </a>`
+                          )}
+                      </div>`).join('')
+            }
+            </div>${chatDiv.innerHTML}`;
+        }
+
+        const divBalance = document.querySelector('.left-title-dialog-container');
+
+        if (divBalance && response.balance) {
+          divBalance.innerHTML += BALANCE_HTML(response.balance);
+        }
+
+        if (divBalance && type === 2) {
+          divBalance.innerHTML += FILL_C2D_HTML();
+        }
+
+        const btnC2D = document.querySelector('.btn__sendC2D');
+
+        if (btnC2D) {
+          btnC2D.addEventListener('click', () => {
+            fetchResource(`${BASE_URL}/api/v1/c2d/link`, {
+              method: 'POST',
+              headers: {
+                'authorization': `Bearer ${token} `,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                userId: foundedUser._id,
+                dialogId
+              })
+            }).then(() => window.location = window.location)
+          })
+        }
+
+        console.log(`set dialogId: ${dialogId} `);
       }
-
-      const chatDiv = document.querySelector('div#chat-container > div');
-      const familyUsers = isLead() ? [] : isParent() ? response.childs : response.parents;
-      if (chatDiv) {
-        chatDiv.innerHTML = `
-  <div style="position: absolute; width: auto; height: auto; border: 1px solid rgba(0,0,0,0.2); padding: 2px 10px; background: #fff; z-index: 10" >
-    ${
-          familyUsers.map(elem => `<div style="padding: 2px 0">
-                    <a href="${getUrl(`profile/${elem._id}`)}"> ${elem.firstName} ${elem.lastName} </a> &nbsp 
-                    ${ !isParent() ? '' : (
-              `<a href="${getUrl(`schedule/${elem._id}`)}" target="_blank">
-                        <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/calendar.svg')}" alt="Расписание"/>
-                      </a> &nbsp 
-                      <a href="${getUrl(`createSchedule/${elem._id}`)}" target="_blank">
-                        <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/plus.svg')}" alt="Записать"/>
-                      </a>`
-            )}
-                  </div>`).join('')
-          }
-          </div>${chatDiv.innerHTML}`;
-      }
-
-      const divBalance = document.querySelector('.left-title-dialog-container');
-
-      if (divBalance && response.balance) {
-        divBalance.innerHTML += BALANCE_HTML(response.balance);
-      }
-
-      if (divBalance && type === 2) {
-        divBalance.innerHTML += FILL_C2D_HTML();
-      }
-
-      const btnC2D = document.querySelector('.btn__sendC2D');
-
-      if (btnC2D) {
-        btnC2D.addEventListener('click', () => {
-          fetchResource(`${BASE_URL}/api/v1/c2d/link`, {
-            method: 'POST',
-            headers: {
-              'authorization': `Bearer ${token} `,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ userId: foundedUser._id, dialogId })
-          }).then(() => window.location = window.location)
-        })
-      }
-
-      console.log(`set dialogId: ${dialogId} `);
     });
   } else {
     return;
