@@ -34,24 +34,37 @@ const createDate = tz => {
   return `${utcHours.toString().length === 1 ? `0${utcHours}` : utcHours}:${utcMinutes.toString().length === 1 ? `0${utcMinutes}` : utcMinutes}`
 }
 
-const FILL_C2D_HTML = () => `
-  <div class="c2d__block" style="width: 260px; height: 40px; margin-top: 8px; display: flex; flex-direction: row; justify-content: space-between;" >
+const FILL_C2D_HTML = () => {
+  const elem = document.createElement('div');
+  elem.className = 'c2d__block';
+  elem.style = 'width: 260px; height: 40px; margin-top: 8px; display: flex; flex-direction: row; justify-content: space-between;';
+  elem.innerHTML += `
     <span style=" align-self: center; text-align: center; user-select: none;" >Поле c2d не заполнено.</span>
     <button class="btn__sendC2D" style=" align-self: center; width: 100px; height: 25px; font-size: 10.5px; display: flex; flex-direction: row; justify-content: center; text-align: center; border: 1px solid #acacac; background: #fff; cursor: pointer;">
       Заполнить
     </button>
-  </div>`;
+  `
+  return elem;
+}
 
-const C2D_HTML = () => `<div class="c2d__block"></div>`;
+const C2D_HTML = () => {
+  const elem = document.createElement('div');
+  elem.className = 'c2d__block';
+  return elem;
+};
 
-const BALANCE_HTML = (balance) => `
-  <div class="balance__block">
-    <span style="margin-top: 4px; font-weight: 600; color: #000; font-size: 12px;">Баланс:</span>
+const BALANCE_HTML = (balance) => {
+  const elem = document.createElement('div');
+  elem.className = 'balance__block';
+  elem.innerHTML += `
+    <span style="margin-top: 4px; font-weight: 600; color: #000; font-size: 12px;">
+      Баланс: 
+    </span>
     <span>
       ${Object.entries(balance).map(elem => [elem[0] + 'ч', elem[1]].join(': ')).join(', ')}
-    </span>
-  </div>
-`;
+    </span>`
+  return elem;
+};
 
 const loadDialog = (dialogId, type, _lastRequest) => {
   const loading = document.querySelector('#loading-container') ? window.getComputedStyle(document.querySelector('#loading-container')).display : '';
@@ -104,8 +117,8 @@ const loadDialog = (dialogId, type, _lastRequest) => {
           div.style.display = 'flex'
         };
         if (!childsParentsBlock && chatDiv) chatDiv.innerHTML = `<div class="childsParents__block"></div>${chatDiv.innerHTML}`;
-        if (!balanceBlock && divBalance && response.balance) divBalance.innerHTML += BALANCE_HTML(response.balance);
-        if (!c2dBlock && divBalance) divBalance.innerHTML += C2D_HTML();
+        if (!balanceBlock && divBalance && response.balance) divBalance.appendChild(BALANCE_HTML(response.balance));
+        if (!c2dBlock && divBalance) divBalance.appendChild(C2D_HTML());
 
         return;
       }
@@ -176,7 +189,7 @@ const loadDialog = (dialogId, type, _lastRequest) => {
             <div class="childsParents__block" style="position: absolute; width: auto; height: auto; border: 1px solid rgba(0,0,0,0.2); padding: 2px 10px; background: #fff; z-index: 10" >
             ${ familyUsers.map(elem => `
                       <div style="padding: 2px 0">
-                        <a href="${getUrl(`profile/${elem._id}`)}"> ${elem.firstName} ${elem.lastName} </a> &nbsp 
+                        <a href="${getUrl(`profile/${elem._id}`)}" target="_blank"> ${elem.firstName} ${elem.lastName} </a> &nbsp 
                         ${ !isParent() ? '' : (
                           `<a href="${getUrl(`schedule/${elem._id}`)}" target="_blank">
                             <img style="width: 15px; height: 15px" src="${chrome.extension.getURL('assets/calendar.svg')}" alt="Расписание"/>
@@ -191,13 +204,13 @@ const loadDialog = (dialogId, type, _lastRequest) => {
         }
 
         if (!balanceBlock && divBalance && response.balance) {
-          divBalance.innerHTML += BALANCE_HTML(response.balance);
+          divBalance.appendChild(BALANCE_HTML(response.balance));
         }
 
         if (!c2dBlock && divBalance && type === 2) {
-          divBalance.innerHTML += FILL_C2D_HTML();
+          divBalance.appendChild(FILL_C2D_HTML());
         } else {
-          divBalance.innerHTML += C2D_HTML();
+          divBalance.appendChild(C2D_HTML());
         }
 
         const btnC2D = document.querySelector('.btn__sendC2D');
