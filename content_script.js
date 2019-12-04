@@ -125,6 +125,7 @@ const loadDialog = (dialogId, type, _lastRequest) => {
                     </a>`
                     )
                   }`
+
           div.style.color = '#c51c1c';
 
           Array.from(div.children).forEach((elem, index) => {
@@ -176,7 +177,7 @@ const loadDialog = (dialogId, type, _lastRequest) => {
             fetchResource(`${BASE_URL}/api/v1/c2d/link`, {
               method: 'POST',
               headers: {
-                'authorization': `Bearer ${token} `,
+                'authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
